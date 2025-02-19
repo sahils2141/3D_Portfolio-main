@@ -2,43 +2,43 @@ import { useEffect } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import HoverLinks from "./HoverLinks";
 import { gsap } from "gsap";
-// import { ScrollSmoother } from "gsap-trial/ScrollSmoother";
 import "./styles/Navbar.css";
 
 gsap.registerPlugin(ScrollTrigger);
-export let smoother: ScrollTrigger;
 
 const Navbar = () => {
   useEffect(() => {
-    smoother = ScrollTrigger.create({
-      wrapper: "#smooth-wrapper",
-      content: "#smooth-content",
-      smooth: 1.7,
-      speed: 1.7,
-      effects: true,
-      autoResize: true,
-      ignoreMobileResize: true,
-    });
+    // Ensure scroll animations trigger at the right points
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
-    smoother.scrollTop(0);
-    smoother.paused(true);
+    // Smooth scrolling behavior for links
+    const links = document.querySelectorAll<HTMLAnchorElement>(".header ul a");
 
-    let links = document.querySelectorAll(".header ul a");
-    links.forEach((elem) => {
-      let element = elem as HTMLAnchorElement;
-      element.addEventListener("click", (e) => {
-        if (window.innerWidth > 1024) {
-          e.preventDefault();
-          let elem = e.currentTarget as HTMLAnchorElement;
-          let section = elem.getAttribute("data-href");
-          smoother.scrollTo(section, true, "top top");
+    const handleClick = (e: Event) => {
+      e.preventDefault();
+      const target = e.currentTarget as HTMLAnchorElement;
+      const sectionId = target.getAttribute("data-href");
+
+      if (sectionId) {
+        const section = document.querySelector(sectionId);
+        if (section) {
+          gsap.to(window, {
+            duration: 1.5,
+            scrollTo: { y: section, autoKill: true },
+            ease: "power3.out",
+          });
         }
-      });
-    });
-    window.addEventListener("resize", () => {
-      ScrollTrigger.refresh(true);
-    });
+      }
+    };
+
+    links.forEach((link) => link.addEventListener("click", handleClick));
+
+    // Cleanup function to remove event listeners
+    return () => {
+      links.forEach((link) => link.removeEventListener("click", handleClick));
+    };
   }, []);
+
   return (
     <>
       <div className="header">
